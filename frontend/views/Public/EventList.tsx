@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../../services/apiService';
 import { Event } from '../../types';
-import { Card, Button } from '../../components/Shared';
+import { Card, Button, PageLoader } from '../../components/Shared';
 import { ICONS } from '../../constants';
 
 // Helper to handle JSONB image format
@@ -56,15 +56,15 @@ const EventCard: React.FC<{ event: Event }> = ({ event }) => {
           alt={event.eventName} 
           className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent opacity-80"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#1F3A5F]/90 via-[#1F3A5F]/25 to-transparent opacity-80"></div>
         
         <div className="absolute top-5 right-5">
-          <div className="bg-[#10B981]/15 backdrop-blur-md px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border border-emerald-400/20 text-[#10B981]">
+          <div className="bg-[#56CCF2]/15 backdrop-blur-md px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border border-[#56CCF2]/30 text-[#2F80ED]">
             {event.status}
           </div>
         </div>
         <div className="absolute top-5 left-5">
-          <div className="bg-white/70 backdrop-blur-md px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border border-white/40 text-slate-900">
+          <div className="bg-white/70 backdrop-blur-md px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border border-white/40 text-[#1F3A5F]">
             {event.locationType}
           </div>
         </div>
@@ -79,42 +79,42 @@ const EventCard: React.FC<{ event: Event }> = ({ event }) => {
       {/* Content Section */}
       <div className="p-8 flex-1 flex flex-col">
         <div className="flex items-center justify-between mb-5">
-           <div className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.15em] flex items-center gap-1.5">
-             <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+           <div className="text-[10px] font-bold text-[#1F3A5F]/60 uppercase tracking-[0.15em] flex items-center gap-1.5">
+            <span className="w-1 h-1 bg-[#56CCF2] rounded-full"></span>
              {event.registrationCount ?? 0} REGISTERED / {event.capacityTotal} SLOTS
            </div>
         </div>
         
-        <p className="text-slate-400 text-[14px] font-medium line-clamp-2 mb-8 leading-relaxed opacity-80">
+        <p className="text-[#1F3A5F]/70 text-[14px] font-medium line-clamp-2 mb-8 leading-relaxed opacity-90">
           {event.description}
         </p>
         
         <div className="mt-auto space-y-4 mb-8">
-          <div className="flex items-center text-[10px] font-black text-slate-600 uppercase tracking-[0.25em]">
-            <ICONS.Calendar className="w-4 h-4 mr-3 text-indigo-500 shrink-0" />
+          <div className="flex items-center text-[10px] font-black text-[#1F3A5F]/80 uppercase tracking-[0.25em]">
+            <ICONS.Calendar className="w-4 h-4 mr-3 text-[#2F80ED] shrink-0" />
             {formatStartForCard(event.startAt, event.timezone)}
           </div>
-          <div className="flex items-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-            <ICONS.MapPin className="w-4 h-4 mr-3 text-slate-200 shrink-0" />
+          <div className="flex items-center text-[10px] font-black text-[#1F3A5F]/60 uppercase tracking-[0.2em]">
+            <ICONS.MapPin className="w-4 h-4 mr-3 text-[#56CCF2] shrink-0" />
             <span className="truncate">{event.locationText || 'Location TBA'}</span>
           </div>
           {regLabel && (
-            <div className="flex items-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-              <span className="w-1 h-1 bg-slate-300 rounded-full mr-3"></span>
+            <div className="flex items-center text-[10px] font-black text-[#1F3A5F]/60 uppercase tracking-[0.2em]">
+              <span className="w-1 h-1 bg-[#56CCF2] rounded-full mr-3"></span>
               {regLabel}
             </div>
           )}
         </div>
 
         {/* Pricing Area */}
-        <div className="flex items-center justify-between pt-6 mt-auto border-t border-slate-50">
+        <div className="flex items-center justify-between pt-6 mt-auto border-t border-[#F4F6F8]">
           <div>
-            <span className="text-[9px] text-slate-300 uppercase tracking-[0.3em] font-black block mb-1">STARTING FROM</span>
-            <p className="text-2xl font-black text-slate-900 tracking-tighter">
-              {minPrice === 0 ? <span className="text-indigo-600">FREE</span> : `PHP ${minPrice.toLocaleString()}`}
+            <span className="text-[9px] text-[#1F3A5F]/40 uppercase tracking-[0.3em] font-black block mb-1">STARTING FROM</span>
+            <p className="text-2xl font-black text-[#1F3A5F] tracking-tighter">
+              {minPrice === 0 ? <span className="text-[#2F80ED]">FREE</span> : `PHP ${minPrice.toLocaleString()}`}
             </p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-[#4F46E5] text-white flex items-center justify-center transition-all hover:bg-slate-900 shadow-[0_10px_25px_-5px_rgba(79,70,229,0.4)] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.2)] hover:scale-105 active:scale-95">
+          <div className="w-12 h-12 rounded-2xl bg-[#2F80ED] text-white flex items-center justify-center transition-all hover:bg-[#1F3A5F] shadow-[0_10px_25px_-5px_rgba(47,128,237,0.35)] hover:shadow-[0_15px_30px_-5px_rgba(31,58,95,0.25)] hover:scale-105 active:scale-95">
             <ICONS.ChevronRight className="w-6 h-6" strokeWidth={3} />
           </div>
         </div>
@@ -127,24 +127,46 @@ export const EventList: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 6, total: 0, totalPages: 1 });
   const [loading, setLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const initialLoadRef = useRef(true);
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
-    setLoading(true);
-    apiService.getEvents(currentPage, 6).then(data => {
-      setEvents(data.events);
-      setPagination(data.pagination);
-      setLoading(false);
-    });
-  }, [currentPage]);
+    const handler = window.setTimeout(() => {
+      setDebouncedSearch(searchTerm.trim());
+    }, 350);
+    return () => window.clearTimeout(handler);
+  }, [searchTerm]);
 
-  const filteredEvents = useMemo(() => {
-    return events.filter(e => 
-      e.eventName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (e.locationText?.toLowerCase() || '').includes(searchTerm.toLowerCase())
-    );
-  }, [events, searchTerm]);
+  useEffect(() => {
+    const fetchData = async () => {
+      const requestId = ++requestIdRef.current;
+      if (initialLoadRef.current) {
+        setLoading(true);
+      } else {
+        setIsFetching(true);
+      }
+      try {
+        const data = await apiService.getEvents(currentPage, 6, debouncedSearch);
+        if (requestId !== requestIdRef.current) return;
+        setEvents(data.events || []);
+        setPagination(data.pagination || { page: 1, limit: 6, total: 0, totalPages: 1 });
+      } catch (error) {
+        if (requestId !== requestIdRef.current) return;
+        console.error('Failed to load events:', error);
+      } finally {
+        if (requestId === requestIdRef.current) {
+          setLoading(false);
+          setIsFetching(false);
+          initialLoadRef.current = false;
+        }
+      }
+    };
+    fetchData();
+  }, [currentPage, debouncedSearch]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -153,13 +175,13 @@ export const EventList: React.FC = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm]);
+  }, [debouncedSearch]);
+
+  const totalPages = Math.max(1, pagination.totalPages || 1);
+  const paginatedEvents = useMemo(() => events, [events]);
 
   if (loading) return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center bg-transparent">
-      <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-      <p className="text-slate-400 font-black uppercase tracking-widest text-[9px]">Syncing Executive Portal...</p>
-    </div>
+    <PageLoader label="Syncing Executive Portal..." />
   );
 
   return (
@@ -167,22 +189,22 @@ export const EventList: React.FC = () => {
       {/* Landing Experience Hero Section */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 gap-12">
         <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-indigo-600 text-[10px] text-white font-black uppercase tracking-[0.2em] mb-4 shadow-xl shadow-indigo-100">
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-[#2F80ED] text-[10px] text-white font-black uppercase tracking-[0.2em] mb-4 shadow-[0_12px_30px_-16px_rgba(47,128,237,0.5)]">
              <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
              ACTIVE REGISTRATION PORTAL
           </div>
-          <h1 className="text-6xl lg:text-[5.5rem] font-black text-slate-900 tracking-tighter leading-[0.85] mb-6">
+          <h1 className="text-6xl lg:text-[5.5rem] font-black text-[#1F3A5F] tracking-tighter leading-[0.85] mb-6">
             Curated Industry <br />
-            <span className="text-indigo-600 italic">Excellence</span>
+            <span className="text-[#2F80ED] italic">Excellence</span>
           </h1>
-          <p className="text-slate-400 text-base lg:text-lg font-medium leading-relaxed max-w-lg opacity-90">
+          <p className="text-[#1F3A5F]/70 text-base lg:text-lg font-medium leading-relaxed max-w-lg">
             Access world-class summits, masterclasses, and executive networking sessions curated for innovators.
           </p>
         </div>
         
         <div className="w-full lg:w-[420px] shrink-0 lg:pb-2">
            <div className="relative group">
-             <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-slate-300 group-focus-within:text-indigo-600 transition-colors">
+             <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-[#56CCF2] group-focus-within:text-[#2F80ED] transition-colors">
                <ICONS.Search className="h-5 w-5" strokeWidth={3} />
              </div>
              <input 
@@ -190,33 +212,38 @@ export const EventList: React.FC = () => {
               placeholder="Search active sessions..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-14 pr-8 py-5 bg-white border border-slate-100 rounded-[2rem] text-[15px] font-bold shadow-[0_15px_40px_-10px_rgba(0,0,0,0.05)] transition-all focus:outline-none focus:ring-8 focus:ring-indigo-600/5 focus:border-indigo-600 placeholder:text-slate-300 placeholder:font-black placeholder:uppercase placeholder:tracking-widest placeholder:text-[11px]"
+              className="block w-full pl-14 pr-14 py-5 bg-white border border-[#F4F6F8] rounded-[2rem] text-[15px] font-bold shadow-[0_15px_40px_-10px_rgba(31,58,95,0.08)] transition-all focus:outline-none focus:ring-8 focus:ring-[#2F80ED]/15 focus:border-[#2F80ED] placeholder:text-[#1F3A5F]/40 placeholder:font-black placeholder:uppercase placeholder:tracking-widest placeholder:text-[11px]"
              />
+             <div className="absolute inset-y-0 right-0 pr-6 flex items-center text-[#2F80ED]/70">
+               {(isFetching || searchTerm.trim() !== debouncedSearch) && (
+                 <div className="w-4 h-4 border-2 border-[#2F80ED]/60 border-t-transparent rounded-full animate-spin" />
+               )}
+             </div>
            </div>
         </div>
       </div>
 
       {/* Grid Display */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-12">
-        {filteredEvents.map((event, idx) => (
-          <div key={event.eventId} className="animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-both" style={{ animationDelay: `${(idx % pagination.limit) * 100}ms` }}>
+        {paginatedEvents.map((event, idx) => (
+          <div key={event.eventId} className="animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-both" style={{ animationDelay: `${(idx % (pagination.limit || 6)) * 100}ms` }}>
             <EventCard event={event} />
           </div>
         ))}
       </div>
       
       {/* Pagination Controller */}
-      {pagination.totalPages > 1 && (
+      {totalPages > 1 && (
         <div className="mt-20 flex items-center justify-center gap-2">
-           <div className="flex items-center gap-2 px-2 py-1 bg-white rounded-[1.5rem] border border-slate-100 shadow-sm">
-              {Array.from({ length: pagination.totalPages }).map((_, i) => (
+           <div className="flex items-center gap-2 px-2 py-1 bg-white rounded-[1.5rem] border border-[#F4F6F8] shadow-sm">
+              {Array.from({ length: totalPages }).map((_, i) => (
                 <button
                   key={i}
                   onClick={() => handlePageChange(i + 1)}
                   className={`w-10 h-10 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
-                    pagination.page === i + 1 
-                    ? 'bg-slate-900 text-white shadow-lg shadow-slate-200' 
-                    : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'
+                    currentPage === i + 1 
+                    ? 'bg-[#1F3A5F] text-white shadow-[0_10px_25px_-15px_rgba(31,58,95,0.35)]' 
+                    : 'text-[#1F3A5F]/50 hover:text-[#1F3A5F] hover:bg-[#F4F6F8]'
                   }`}
                 >
                   {i + 1}
@@ -227,15 +254,15 @@ export const EventList: React.FC = () => {
       )}
       
       {/* Empty State */}
-      {filteredEvents.length === 0 && (
-        <div className="py-32 px-12 text-center bg-white rounded-[3rem] border border-slate-50 shadow-sm">
-          <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-            <ICONS.Search className="w-10 h-10 text-slate-200" />
+      {events.length === 0 && (
+        <div className="py-32 px-12 text-center bg-white rounded-[3rem] border border-[#F4F6F8] shadow-sm">
+          <div className="w-20 h-20 bg-[#F4F6F8] rounded-full flex items-center justify-center mx-auto mb-6">
+            <ICONS.Search className="w-10 h-10 text-[#56CCF2]/60" />
           </div>
-          <h3 className="text-3xl font-black text-slate-900 tracking-tighter mb-4">No active sessions found</h3>
+          <h3 className="text-3xl font-black text-[#1F3A5F] tracking-tighter mb-4">No active sessions found</h3>
           <Button 
             variant="outline" 
-            className="px-12 py-4 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] border-2 border-slate-100 transition-all hover:bg-slate-50"
+            className="px-12 py-4 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] border-2 border-[#2F80ED]/30 transition-all hover:bg-[#F4F6F8]"
             onClick={() => setSearchTerm('')}
           >
             Clear Filters

@@ -53,42 +53,49 @@ export const PaymentStatusView: React.FC = () => {
       case 'checking':
         return (
           <div className="flex flex-col items-center py-20">
-            <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
-            <h2 className="text-xl font-bold">Verifying Payment...</h2>
-            <p className="text-slate-500">Please do not refresh this page.</p>
+            <div className="w-12 h-12 border-4 border-[#F4F6F8] border-t-[#2F80ED] rounded-full animate-spin mb-4"></div>
+            <h2 className="text-xl font-bold text-[#1F3A5F]">Verifying Payment...</h2>
+            <p className="text-[#1F3A5F]/60">Please do not refresh this page.</p>
           </div>
         );
       case 'success':
         return (
           <div className="flex flex-col items-center py-10 px-6 text-center">
-            <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6">
+            <div className="w-20 h-20 bg-[#56CCF2]/20 text-[#2F80ED] rounded-full flex items-center justify-center mb-6">
               <ICONS.CheckCircle className="w-10 h-10" />
             </div>
-            <h1 className="text-3xl font-black text-slate-900 mb-2">Payment Successful!</h1>
-            <p className="text-slate-500 max-w-sm mb-8">
-              Your registration order <strong>#{order?.orderId.substr(-6).toUpperCase()}</strong> is confirmed. A copy of your ticket has been sent to your email.
+            <h1 className="text-3xl font-black text-[#1F3A5F] mb-2">Payment Successful!</h1>
+            <p className="text-[#1F3A5F]/60 max-w-sm mb-8">
+              Your registration order <strong>#{order?.orderId}</strong> is confirmed. A copy of your ticket has been sent to your email.
             </p>
             <div className="space-y-3 w-full max-w-xs">
-              <Button className="w-full" size="lg" onClick={() => navigate(`/tickets/${sessionId}`)}>
+              <Button className="w-full bg-[#2F80ED] hover:bg-[#1F3A5F] text-white" size="lg" onClick={() => navigate(`/tickets/${sessionId}`)}>
                 View Digital Ticket
               </Button>
-              <Button variant="outline" className="w-full" onClick={() => navigate('/events')}>
+              <Button variant="outline" className="w-full border-[#2F80ED]/30 text-[#1F3A5F] hover:bg-[#F4F6F8]" onClick={() => navigate('/events')}>
                 Back to Events
               </Button>
             </div>
 
             {tickets.length > 0 && (
               <div className="w-full mt-10 text-left">
-                <h3 className="text-sm font-black text-slate-500 uppercase tracking-[0.2em] mb-4">Tickets</h3>
+                <h3 className="text-sm font-black text-[#1F3A5F]/60 uppercase tracking-[0.2em] mb-4">Tickets</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {tickets.map((t) => (
-                    <div key={t.ticketId} className="border border-slate-100 rounded-2xl p-4 bg-white shadow-sm flex flex-col items-center gap-3">
+                    <a
+                      key={t.ticketId}
+                      href={`#/tickets/${t.ticketId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="border border-[#F4F6F8] rounded-2xl p-4 bg-white shadow-sm flex flex-col items-center gap-3 transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#2F80ED]"
+                      title="Open this ticket"
+                    >
                       <QRCode value={t.qrPayload || t.ticketCode} size={140} />
-                      <div className="text-xs text-slate-500 break-all text-center">
+                      <div className="text-xs text-[#1F3A5F]/60 break-all text-center">
                         {t.ticketCode}
                       </div>
-                      <span className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-600">{t.status}</span>
-                    </div>
+                      <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#2F80ED]">{t.status}</span>
+                    </a>
                   ))}
                 </div>
               </div>
@@ -98,14 +105,14 @@ export const PaymentStatusView: React.FC = () => {
       case 'failed':
         return (
           <div className="flex flex-col items-center py-10 px-6 text-center">
-            <div className="w-20 h-20 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-6">
+            <div className="w-20 h-20 bg-[#1F3A5F]/10 text-[#1F3A5F] rounded-full flex items-center justify-center mb-6">
               <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </div>
-            <h1 className="text-3xl font-black text-slate-900 mb-2">Payment Failed</h1>
-            <p className="text-slate-500 max-w-sm mb-8">
+            <h1 className="text-3xl font-black text-[#1F3A5F] mb-2">Payment Failed</h1>
+            <p className="text-[#1F3A5F]/60 max-w-sm mb-8">
               We couldn't process your payment. Please try again or contact support if the issue persists.
             </p>
-            <Button className="w-full max-w-xs" variant="primary" size="lg" onClick={() => navigate('/events')}>
+            <Button className="w-full max-w-xs bg-[#2F80ED] hover:bg-[#1F3A5F] text-white" variant="primary" size="lg" onClick={() => navigate('/events')}>
               Try Again
             </Button>
           </div>

@@ -7,11 +7,11 @@ export const Badge: React.FC<{
   className?: string 
 }> = ({ children, type = 'neutral', className = '' }) => {
   const styles = {
-    success: 'bg-emerald-100 text-emerald-700',
-    danger: 'bg-rose-100 text-rose-700',
-    warning: 'bg-amber-100 text-amber-700',
-    info: 'bg-indigo-100 text-indigo-700',
-    neutral: 'bg-slate-100 text-slate-700',
+    success: 'bg-[#56CCF2]/20 text-[#1F3A5F]',
+    danger: 'bg-[#1F3A5F]/10 text-[#1F3A5F]',
+    warning: 'bg-[#2F80ED]/15 text-[#1F3A5F]',
+    info: 'bg-[#2F80ED]/15 text-[#2F80ED]',
+    neutral: 'bg-[#F4F6F8] text-[#1F3A5F]/70',
   };
   return (
     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${styles[type]} ${className}`}>
@@ -27,7 +27,7 @@ export const Card: React.FC<{
 }> = ({ children, className = '', onClick }) => (
   <div 
     onClick={onClick}
-    className={`bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden ${className}`}
+    className={`bg-white rounded-xl shadow-sm border border-[#F4F6F8] overflow-hidden ${className}`}
   >
     {children}
   </div>
@@ -53,11 +53,11 @@ export const Button: React.FC<{
   const base = 'inline-flex items-center justify-center font-medium transition-all duration-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
   
   const variants = {
-    primary: 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500',
-    secondary: 'bg-slate-800 text-white hover:bg-slate-900 focus:ring-slate-700',
-    outline: 'border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 focus:ring-slate-500',
-    ghost: 'text-slate-600 hover:bg-slate-100 focus:ring-slate-400',
-    danger: 'bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-500'
+    primary: 'bg-[#2F80ED] text-white hover:bg-[#1F3A5F] focus:ring-[#2F80ED]',
+    secondary: 'bg-[#1F3A5F] text-white hover:bg-[#2F80ED] focus:ring-[#1F3A5F]',
+    outline: 'border border-[#2F80ED]/30 text-[#1F3A5F] bg-white hover:bg-[#F4F6F8] focus:ring-[#2F80ED]',
+    ghost: 'text-[#1F3A5F]/70 hover:bg-[#F4F6F8] focus:ring-[#56CCF2]',
+    danger: 'bg-[#1F3A5F] text-white hover:bg-[#2F80ED] focus:ring-[#1F3A5F]'
   };
 
   const sizes = {
@@ -84,12 +84,12 @@ export const Input: React.FC<{
   [key: string]: any;
 }> = ({ label, error, ...props }) => (
   <div className="space-y-1.5 w-full">
-    {label && <label className="block text-sm font-medium text-slate-700">{label}</label>}
+    {label && <label className="block text-sm font-medium text-[#1F3A5F]">{label}</label>}
     <input
-      className={`block w-full px-3 py-2 bg-white border ${error ? 'border-rose-500' : 'border-slate-300'} rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error ? 'focus:ring-rose-500' : 'focus:ring-indigo-500'} transition-all`}
+      className={`block w-full px-3 py-2 bg-white border ${error ? 'border-[#2F80ED]' : 'border-[#F4F6F8]'} rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error ? 'focus:ring-[#2F80ED]/40' : 'focus:ring-[#2F80ED]/40'} transition-all`}
       {...props}
     />
-    {error && <p className="text-xs text-rose-500 mt-1">{error}</p>}
+    {error && <p className="text-xs text-[#1F3A5F] mt-1">{error}</p>}
   </div>
 );
 
@@ -105,17 +105,17 @@ export const Modal: React.FC<{
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 bg-[#1F3A5F]/70 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
       
       {/* Content */}
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-300">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
-          <h2 className="text-xl font-bold text-slate-900">{title}</h2>
+        <div className="px-6 py-4 border-b border-[#F4F6F8] flex items-center justify-between sticky top-0 bg-white z-10">
+          <h2 className="text-xl font-bold text-[#1F3A5F]">{title}</h2>
           <button 
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+            className="p-2 text-[#1F3A5F]/50 hover:text-[#1F3A5F] hover:bg-[#F4F6F8] rounded-full transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
@@ -124,6 +124,44 @@ export const Modal: React.FC<{
           {children}
         </div>
       </div>
+    </div>
+  );
+};
+
+export const PageLoader: React.FC<{
+  label?: string;
+  variant?: 'page' | 'section';
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
+}> = ({
+  label = 'Loading content...',
+  variant = 'section',
+  size = 'md',
+  className = ''
+}) => {
+  const variants = {
+    page: 'min-h-screen bg-[#F4F6F8]',
+    section: 'min-h-[60vh] bg-transparent'
+  };
+
+  const sizes = {
+    sm: 'w-6 h-6',
+    md: 'w-8 h-8',
+    lg: 'w-10 h-10'
+  };
+
+  return (
+    <div className={`flex flex-col items-center justify-center text-center ${variants[variant]} ${className}`}>
+      <div className={`relative ${sizes[size]}`}>
+        <div className="absolute inset-0 rounded-full border border-[#56CCF2]/35" />
+        <div className="absolute inset-0 rounded-full border-2 border-[#2F80ED] border-t-transparent animate-spin" />
+        <div className="absolute inset-2 rounded-full bg-[#2F80ED]/10" />
+      </div>
+      {label && (
+        <p className="mt-4 text-[#1F3A5F]/60 font-black uppercase tracking-widest text-[9px]">
+          {label}
+        </p>
+      )}
     </div>
   );
 };

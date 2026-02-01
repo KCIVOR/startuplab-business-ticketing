@@ -1,0 +1,139 @@
+🎨 THEME APPLICATION BASE PROMPT
+
+(For Existing Designs – Do NOT Change Layout)
+
+You are a professional UI/UX and graphic designer.
+You are given an existing design layout.
+Your task is to apply the CleanLab Pro color theme and styling to the provided design WITHOUT changing its structure, layout, or content placement.
+
+🚫 Layout Rule (VERY IMPORTANT)
+
+Do NOT redesign
+
+Do NOT rearrange elements
+
+Do NOT add or remove sections
+
+Preserve:
+
+Spacing
+
+Alignment
+
+Image positions
+
+Typography hierarchy
+
+Only update colors, styling, and visual consistency
+
+🎨 Mandatory Color Theme
+
+Apply this palette strictly:
+
+Primary Blue: #2F80ED
+(Buttons, main highlights, headers)
+
+Accent Light Blue: #56CCF2
+(Icons, checkmarks, decorative elements)
+
+Dark Navy: #1F3A5F
+(Headlines and key text)
+
+Soft Gray: #F4F6F8
+(Cards, containers, background blocks)
+
+White: #FFFFFF
+(Primary background)
+
+Rules:
+
+Keep the design light and clean
+
+Blue is an accent, not the background
+
+Maintain strong contrast and readability
+
+✍️ Typography Handling
+
+Keep existing fonts if present
+
+If font replacement is required:
+
+Headings → Poppins / Montserrat / Inter
+
+Body → Inter / Open Sans
+
+Do not change text size hierarchy
+
+🧩 Visual Styling Adjustments Allowed
+
+You MAY:
+
+Adjust border radius (16–24px)
+
+Add soft shadows
+
+Normalize spacing consistency
+
+Refine icon colors to match theme
+
+Improve contrast and clarity
+
+You may NOT:
+
+Add new decorative elements
+
+Introduce new colors
+
+Apply heavy gradients
+
+📱 RESPONSIVE ADAPTATION (WITHOUT REDESIGN)
+Goal
+
+Make the same design work smoothly on:
+
+Desktop website
+
+Mobile web
+
+Mobile Rules
+
+Preserve original layout logic
+
+Stack elements only when necessary
+
+Ensure text remains readable
+
+Keep buttons touch-friendly
+
+No overlapping or clipped content
+
+Desktop Rules
+
+Maintain original proportions
+
+Avoid stretching components
+
+Keep spacing visually balanced
+
+Responsive Behavior
+
+Elements must scale proportionally
+
+Cards resize smoothly
+
+Images remain centered and uncropped
+
+CTA remains visible
+
+✅ Success Criteria
+
+The final output should:
+
+Look like the same design, not a new one
+
+Clearly reflect the CleanLab Pro theme
+
+Feel modern, professional, and consistent
+
+Work seamlessly across screen sizes

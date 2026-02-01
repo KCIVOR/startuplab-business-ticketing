@@ -19,10 +19,29 @@ export const getRegistrationsByEvent = async (req, res) => {
     const eventId = req.query?.eventId;
     if (!eventId) return res.status(400).json({ error: 'eventId required' });
 
-    const { data: tickets, error: tErr } = await supabase
+    const search = (req.query?.search || '').trim();
+    let attendeeFilterIds = null;
+
+    if (search) {
+      const { data: attendees, error: attErr } = await supabase
+        .from('attendees')
+        .select('attendeeId')
+        .or(`name.ilike.%${search}%,email.ilike.%${search}%`);
+      if (attErr) return res.status(500).json({ error: attErr.message });
+      attendeeFilterIds = (attendees || []).map(a => a.attendeeId);
+      if (!attendeeFilterIds.length) return res.json([]);
+    }
+
+    let ticketsQuery = supabase
       .from('tickets')
       .select('ticketId, ticketCode, qrPayload, status, attendeeId, eventId, orderId, ticketTypeId, issuedAt, usedAt')
       .eq('eventId', eventId);
+
+    if (attendeeFilterIds) {
+      ticketsQuery = ticketsQuery.in('attendeeId', attendeeFilterIds);
+    }
+
+    const { data: tickets, error: tErr } = await ticketsQuery;
     if (tErr) return res.status(500).json({ error: tErr.message });
     if (!tickets || !tickets.length) return res.json([]);
 
@@ -60,10 +79,13 @@ export const getRegistrationsByEvent = async (req, res) => {
       return {
         id: t.ticketId,
         ticketCode: t.ticketCode,
+        qrPayload: t.qrPayload || t.ticketCode,
         eventId: t.eventId,
         eventName,
         attendeeName: attendee.name || '',
         attendeeEmail: attendee.email || '',
+        attendeePhone: attendee.phoneNumber || null,
+        attendeeCompany: attendee.company || null,
         ticketName: tt.name || '',
         status: t.status,
         paymentStatus: order.status || '',
@@ -86,18 +108,52 @@ export const getAllRegistrations = async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const offset = (page - 1) * limit;
+    const search = (req.query?.search || '').trim();
+    let attendeeFilterIds = null;
 
-    const { data: tickets, error: tErr, count: total } = await supabase
+    if (search) {
+      const { data: attendees, error: attErr } = await supabase
+        .from('attendees')
+        .select('attendeeId')
+        .or(`name.ilike.%${search}%,email.ilike.%${search}%`);
+      if (attErr) return res.status(500).json({ error: attErr.message });
+      attendeeFilterIds = (attendees || []).map(a => a.attendeeId);
+      if (!attendeeFilterIds.length) {
+        return res.json({
+          registrations: [],
+          pagination: {
+            page,
+            limit,
+            total: 0,
+            totalPages: 1
+          }
+        });
+      }
+    }
+
+    let ticketsQuery = supabase
       .from('tickets')
       .select('ticketId, ticketCode, qrPayload, status, attendeeId, eventId, orderId, ticketTypeId, issuedAt, usedAt', { count: 'exact' })
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false });
+
+    if (attendeeFilterIds) {
+      ticketsQuery = ticketsQuery.in('attendeeId', attendeeFilterIds);
+    }
+
+    const { data: tickets, error: tErr, count: total } = await ticketsQuery
       .range(offset, offset + limit - 1);
     if (tErr) return res.status(500).json({ error: tErr.message });
     let totalCount = typeof total === 'number' ? total : null;
     if (totalCount === null) {
-      const { error: countErr, count: fallbackCount } = await supabase
+      let countQuery = supabase
         .from('tickets')
         .select('ticketId', { count: 'exact', head: true });
+
+      if (attendeeFilterIds) {
+        countQuery = countQuery.in('attendeeId', attendeeFilterIds);
+      }
+
+      const { error: countErr, count: fallbackCount } = await countQuery;
       if (countErr) return res.status(500).json({ error: countErr.message });
       totalCount = fallbackCount || 0;
     }
@@ -152,10 +208,13 @@ export const getAllRegistrations = async (req, res) => {
       return {
         id: t.ticketId,
         ticketCode: t.ticketCode,
+        qrPayload: t.qrPayload || t.ticketCode,
         eventId: t.eventId,
         eventName: event.eventName || '',
         attendeeName: attendee.name || '',
         attendeeEmail: attendee.email || '',
+        attendeePhone: attendee.phoneNumber || null,
+        attendeeCompany: attendee.company || null,
         ticketName: tt.name || '',
         status: t.status,
         paymentStatus: order.status || '',
@@ -252,14 +311,62 @@ export const getTicketsByOrder = async (req, res) => {
 export const getTicketById = async (req, res) => {
   try {
     const { id } = req.params;
-    const { data, error } = await supabase
+    const selectFields = 'ticketId, ticketCode, qrPayload, status, attendeeId, eventId, orderId, ticketTypeId, issuedAt, usedAt';
+    let { data: ticket, error } = await supabase
       .from('tickets')
-      .select('*')
+      .select(selectFields)
       .eq('ticketId', id)
-      .single();
+      .maybeSingle();
     if (error) return res.status(500).json({ error: error.message });
-    if (!data) return res.status(404).json({ error: 'Ticket not found' });
-    return res.json(data);
+
+    // Fallback: if a payment status page passes orderId, return first ticket for that order
+    if (!ticket) {
+      const resp = await supabase
+        .from('tickets')
+        .select(selectFields)
+        .eq('orderId', id)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      ticket = resp.data;
+      error = resp.error;
+      if (error) return res.status(500).json({ error: error.message });
+    }
+
+    if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+
+    const [attResp, ordResp, ttResp, evResp] = await Promise.all([
+      ticket.attendeeId
+        ? supabase.from('attendees').select('attendeeId, name, email, phoneNumber, company').eq('attendeeId', ticket.attendeeId).maybeSingle()
+        : { data: null, error: null },
+      ticket.orderId
+        ? supabase.from('orders').select('orderId, totalAmount, currency, status').eq('orderId', ticket.orderId).maybeSingle()
+        : { data: null, error: null },
+      ticket.ticketTypeId
+        ? supabase.from('ticketTypes').select('ticketTypeId, name').eq('ticketTypeId', ticket.ticketTypeId).maybeSingle()
+        : { data: null, error: null },
+      ticket.eventId
+        ? supabase.from('events').select('eventId, eventName').eq('eventId', ticket.eventId).maybeSingle()
+        : { data: null, error: null }
+    ]);
+
+    if (attResp.error) return res.status(500).json({ error: attResp.error.message });
+    if (ordResp.error) return res.status(500).json({ error: ordResp.error.message });
+    if (ttResp.error) return res.status(500).json({ error: ttResp.error.message });
+    if (evResp.error) return res.status(500).json({ error: evResp.error.message });
+
+    return res.json({
+      ...ticket,
+      eventName: evResp.data?.eventName || '',
+      attendeeName: attResp.data?.name || '',
+      attendeeEmail: attResp.data?.email || '',
+      attendeePhone: attResp.data?.phoneNumber || null,
+      attendeeCompany: attResp.data?.company || null,
+      ticketName: ttResp.data?.name || '',
+      paymentStatus: ordResp.data?.status || '',
+      amountPaid: ordResp.data?.totalAmount || 0,
+      currency: ordResp.data?.currency || 'PHP'
+    });
   } catch (err) {
     return res.status(500).json({ error: err?.message || 'Unexpected error' });
   }

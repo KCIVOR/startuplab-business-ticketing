@@ -94,38 +94,38 @@ export const LoginPerspective: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-[#F4F6F8] flex items-center justify-center px-4 relative overflow-hidden">
       {/* Decorative gradients for a modern look */}
       <div className="absolute top-0 left-0 w-full h-full opacity-40 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-indigo-100 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-emerald-100 rounded-full blur-[120px]"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-[#56CCF2]/30 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-[#2F80ED]/10 rounded-full blur-[120px]"></div>
       </div>
 
       <div className="max-w-4xl w-full relative z-10 py-12">
         <div className="text-center mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
-          <h1 className="text-4xl font-black text-slate-900 tracking-tighter mb-3">
-            StartupLab <span className="text-indigo-600">Business Ticketing</span>
+          <h1 className="text-4xl font-black text-[#1F3A5F] tracking-tighter mb-3">
+            StartupLab <span className="text-[#2F80ED]">Business Ticketing</span>
           </h1>
-          <p className="text-slate-500 text-lg font-medium">Portal Access Perspective</p>
-          <div className="w-20 h-1 bg-indigo-600 mx-auto mt-4 rounded-full"></div>
+          <p className="text-[#1F3A5F]/60 text-lg font-medium">Portal Access Perspective</p>
+          <div className="w-20 h-1 bg-[#2F80ED] mx-auto mt-4 rounded-full"></div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Administrator Perspective */}
           <Card 
-            className="p-10 bg-white border-slate-200 hover:border-indigo-300 transition-all group flex flex-col h-full shadow-xl shadow-slate-200/50 rounded-[2.5rem]"
+            className="p-10 bg-white border-[#F4F6F8] hover:border-[#2F80ED] transition-all group flex flex-col h-full shadow-xl shadow-[#2F80ED]/10 rounded-[2.5rem]"
           >
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-16 h-16 bg-[#56CCF2]/20 text-[#2F80ED] rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <ICONS.Layout className="w-8 h-8" />
               </div>
               <div>
-                <h2 className="text-2xl font-black text-slate-900">Administrator</h2>
-                <p className="text-indigo-600 text-[10px] uppercase font-black tracking-widest">Enterprise Access</p>
+                <h2 className="text-2xl font-black text-[#1F3A5F]">Administrator</h2>
+                <p className="text-[#2F80ED] text-[10px] uppercase font-black tracking-widest">Enterprise Access</p>
               </div>
             </div>
             
-            <p className="text-slate-500 text-sm mb-8 leading-relaxed">
+            <p className="text-[#1F3A5F]/60 text-sm mb-8 leading-relaxed">
               Full control over events, pricing strategies, detailed revenue analytics, and organization-wide attendee databases rovickromasanta.startuplab@gmail.com.
             </p>
 
@@ -144,31 +144,31 @@ export const LoginPerspective: React.FC = () => {
             </div>
 
             <Button 
-              className="w-full bg-indigo-600 hover:bg-indigo-700 mt-auto py-4 text-base font-bold shadow-lg shadow-indigo-100 rounded-2xl"
+              className="w-full bg-[#2F80ED] hover:bg-[#1F3A5F] mt-auto py-4 text-[#1F3A5F] font-bold shadow-lg shadow-[#2F80ED]/20 rounded-2xl"
               onClick={handleAdminLogin}
             >
               Enter Admin Dashboard
             </Button>
             {adminError && (
-              <div className="mt-4 text-rose-600 text-sm font-bold text-center">{adminError}</div>
+              <div className="mt-4 text-[#1F3A5F] text-sm font-bold text-center">{adminError}</div>
             )}
           </Card>
 
           {/* Event Staff Perspective */}
           <Card 
-            className="p-10 bg-white border-slate-200 hover:border-emerald-300 transition-all group flex flex-col h-full shadow-xl shadow-slate-200/50 rounded-[2.5rem]"
+            className="p-10 bg-white border-[#F4F6F8] hover:border-[#56CCF2] transition-all group flex flex-col h-full shadow-xl shadow-[#56CCF2]/10 rounded-[2.5rem]"
           >
              <div className="flex items-center gap-4 mb-8">
-              <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-16 h-16 bg-[#2F80ED]/10 text-[#2F80ED] rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <ICONS.CheckCircle className="w-8 h-8" />
               </div>
               <div>
-                <h2 className="text-2xl font-black text-slate-900">Event Staff</h2>
-                <p className="text-emerald-600 text-[10px] uppercase font-black tracking-widest">Operations Hub</p>
+                <h2 className="text-2xl font-black text-[#1F3A5F]">Event Staff</h2>
+                <p className="text-[#56CCF2] text-[10px] uppercase font-black tracking-widest">Operations Hub</p>
               </div>
             </div>
             
-            <p className="text-slate-500 text-sm mb-8 leading-relaxed">
+            <p className="text-[#1F3A5F]/60 text-sm mb-8 leading-relaxed">
               Streamlined tools for high-speed attendee check-ins, QR scanning, and onsite registration status verification.
             </p>
 
@@ -187,21 +187,21 @@ export const LoginPerspective: React.FC = () => {
             </div>
 
             <Button 
-              className="w-full bg-emerald-600 hover:bg-emerald-700 mt-auto py-4 text-base font-bold shadow-lg shadow-emerald-100 rounded-2xl"
+              className="w-full bg-[#56CCF2] hover:bg-[#2F80ED] mt-auto py-4 text-[#1F3A5F] font-bold shadow-lg shadow-[#56CCF2]/20 rounded-2xl"
               onClick={handleStaffLogin}
             >
               Enter Staff Portal
             </Button>
             {staffError && (
-              <div className="mt-4 text-rose-600 text-sm font-bold text-center">{staffError}</div>
+              <div className="mt-4 text-[#1F3A5F] text-sm font-bold text-center">{staffError}</div>
             )}
           </Card>
         </div>
 
         <div className="mt-16 flex flex-col items-center gap-6">
           <button 
-            className="text-slate-400 hover:text-indigo-600 transition-all text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 group"
-            onClick={() => navigate('/events')}
+            className="text-[#1F3A5F]/50 hover:text-[#2F80ED] transition-all text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 group"
+            onClick={() => navigate('/')}
           >
             <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
             Return to Public Website

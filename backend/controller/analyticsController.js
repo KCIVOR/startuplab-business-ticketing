@@ -52,8 +52,7 @@ export const getRecentTransactions = async (_req, res) => {
     const { data, error } = await supabase
       .from('orders')
       .select('orderId, eventId, buyerName, totalAmount, currency, status, created_at')
-      .order('created_at', { ascending: false })
-      .limit(10);
+      .order('created_at', { ascending: false });
     if (error) return res.status(500).json({ error: error.message });
     return res.json(data || []);
   } catch (err) {

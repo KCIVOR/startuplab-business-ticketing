@@ -109,10 +109,13 @@ export interface Ticket {
 export interface RegistrationView {
   id: string; // Ticket ID or Attendee ID depending on context
   ticketCode: string;
+  qrPayload?: string;
   eventId: string;
   eventName: string;
   attendeeName: string;
   attendeeEmail: string;
+  attendeePhone?: string;
+  attendeeCompany?: string;
   ticketName: string;
   status: TicketStatus;
   paymentStatus: OrderStatus;

@@ -262,7 +262,7 @@ export const hitpayWebhook = async (req, res) => {
                 name: order.buyerName,
                 email: order.buyerEmail,
                 phoneNumber: order.buyerPhone || null,
-                company,
+                company: order.metadata?.company || null,
                 consent: true
               })
               .select('*')

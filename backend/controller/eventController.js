@@ -37,10 +37,14 @@ export const listEvents = async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const offset = (page - 1) * limit;
+    const search = (req.query.search || '').toString().trim();
 
     // 1) Fetch all events (optionally filter by status)
     let query = supabase.from('events').select('*');
     if (status) query = query.eq('status', status);
+    if (search) {
+      query = query.or(`eventName.ilike.%${search}%,locationText.ilike.%${search}%,description.ilike.%${search}%`);
+    }
     const { data: events, error: eventsError } = await query;
     if (eventsError) return res.status(500).json({ error: eventsError.message });
 

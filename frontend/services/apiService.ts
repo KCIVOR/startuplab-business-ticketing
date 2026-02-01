@@ -25,8 +25,9 @@ export const apiService = {
   // --- Public APIs ---
 
   // GET /api/events
-  getEvents: async (page = 1, limit = 10): Promise<{ events: Event[], pagination: any }> => {
-    const res = await fetch(`${API_BASE}/api/events?status=PUBLISHED&page=${page}&limit=${limit}`, {
+  getEvents: async (page = 1, limit = 10, search = ''): Promise<{ events: Event[], pagination: any }> => {
+    const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
+    const res = await fetch(`${API_BASE}/api/events?status=PUBLISHED&page=${page}&limit=${limit}${searchParam}`, {
       headers: { 'Content-Type': 'application/json' }
     });
     if (!res.ok) throw new Error(`Failed to load events: ${res.status}`);
@@ -102,44 +103,28 @@ export const apiService = {
   },
 
   // GET /api/tickets/:ticketId
-  // Returns a joined view for the UI
   getTicketDetails: async (id: string): Promise<RegistrationView | null> => {
-    const tickets: Ticket[] = JSON.parse(localStorage.getItem(STORAGE_TICKETS) || '[]');
-    const attendees: Attendee[] = JSON.parse(localStorage.getItem(STORAGE_ATTENDEES) || '[]');
-    const orders: Order[] = JSON.parse(localStorage.getItem(STORAGE_ORDERS) || '[]');
-    const events: Event[] = JSON.parse(localStorage.getItem(STORAGE_EVENTS) || '[]');
-
-    // Try finding by ticketId OR orderId (for confirmation page)
-    let ticket = tickets.find(t => t.ticketId === id);
-    
-    // If passed an orderId, get the first ticket
-    if (!ticket) {
-        ticket = tickets.find(t => t.orderId === id);
-    }
-    
-    if (!ticket) return null;
-
-    const event = events.find(e => e.eventId === ticket!.eventId);
-    const attendee = attendees.find(a => a.attendeeId === ticket!.attendeeId);
-    const order = orders.find(o => o.orderId === ticket!.orderId);
-    const ticketType = event?.ticketTypes.find(t => t.ticketTypeId === ticket!.ticketTypeId);
-
-    if (!event || !attendee || !order) return null;
-
+    const res = await fetch(`${API_BASE}/api/tickets/${encodeURIComponent(id)}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    // Map backend ticket fields to RegistrationView for UI
     return {
-      id: ticket.ticketId,
-      ticketCode: ticket.ticketCode,
-      eventId: event.eventId,
-      eventName: event.eventName,
-      attendeeName: attendee.name,
-      attendeeEmail: attendee.email,
-      ticketName: ticketType?.name || 'Unknown Ticket',
-      status: ticket.status,
-      paymentStatus: order.status,
-      orderId: order.orderId,
-      amountPaid: order.totalAmount,
-      currency: order.currency,
-      checkInTimestamp: ticket.usedAt
+      id: data.ticketId,
+      ticketCode: data.ticketCode,
+      qrPayload: data.qrPayload || data.ticketCode,
+      eventId: data.eventId,
+      eventName: data.eventName || '', // backend may need to populate this
+      attendeeName: data.attendeeName || '', // backend may need to populate this
+      attendeeEmail: data.attendeeEmail || '', // backend may need to populate this
+      attendeePhone: data.attendeePhone || null,
+      attendeeCompany: data.attendeeCompany || null,
+      ticketName: data.ticketName || '', // backend may need to populate this
+      status: data.status,
+      paymentStatus: data.paymentStatus || '', // backend may need to populate this
+      orderId: data.orderId,
+      amountPaid: data.amountPaid || 0, // backend may need to populate this
+      currency: data.currency || 'PHP', // backend may need to populate this
+      checkInTimestamp: data.usedAt || data.checkInTimestamp || null
     };
   },
 
@@ -191,33 +176,27 @@ export const apiService = {
 // --- Admin APIs ---
 
   getAttendeesByEvent: async (eventId: string): Promise<Attendee[]> => {
-    // TODO: Replace with real API call
-    const attendees: Attendee[] = JSON.parse(localStorage.getItem(STORAGE_ATTENDEES) || '[]');
-    return attendees.filter(a => a.eventId === eventId);
+    const res = await fetch(`${API_BASE}/api/admin/attendees?eventId=${encodeURIComponent(eventId)}`, {
+      credentials: 'include'
+    });
+    if (!res.ok) throw new Error(`Failed to load attendees: ${res.status}`);
+    return await res.json();
   },
 
   createTicket: async (payload: Partial<Ticket>): Promise<Ticket> => {
-    // TODO: Replace with real API call
-    const tickets: Ticket[] = JSON.parse(localStorage.getItem(STORAGE_TICKETS) || '[]');
-    const ticket: Ticket = {
-      ticketId: `tik-${Math.random().toString(36).substr(2, 9)}`,
-      eventId: payload.eventId!,
-      ticketTypeId: payload.ticketTypeId!,
-      orderId: payload.orderId || '',
-      attendeeId: payload.attendeeId!,
-      ticketCode: `TC-${Math.random().toString(36).toUpperCase().substr(2, 8)}`,
-      qrPayload: `VALID:${Math.random().toString(36).substr(2, 9)}`,
-      status: payload.status || 'ISSUED',
-      issuedAt: new Date().toISOString(),
-      usedAt: undefined
-    };
-    tickets.push(ticket);
-    localStorage.setItem(STORAGE_TICKETS, JSON.stringify(tickets));
-    return ticket;
+    const res = await fetch(`${API_BASE}/api/admin/tickets`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error(`Failed to create ticket: ${res.status}`);
+    return await res.json();
   },
 
-  getAdminEvents: async (): Promise<Event[]> => {
-    const res = await fetch(`${API_BASE}/api/admin/events`, {
+  getAdminEvents: async (search = ''): Promise<Event[]> => {
+    const searchParam = search ? `?search=${encodeURIComponent(search)}` : '';
+    const res = await fetch(`${API_BASE}/api/admin/events${searchParam}`, {
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include'
     });
@@ -292,8 +271,9 @@ export const apiService = {
   },
 
   // GET /api/tickets/registrations?eventId=...
-  getEventRegistrations: async (eventId: string): Promise<RegistrationView[]> => {
-    const res = await fetch(`${API_BASE}/api/tickets/registrations?eventId=${encodeURIComponent(eventId)}`, {
+  getEventRegistrations: async (eventId: string, search = ''): Promise<RegistrationView[]> => {
+    const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
+    const res = await fetch(`${API_BASE}/api/tickets/registrations?eventId=${encodeURIComponent(eventId)}${searchParam}` , {
       credentials: 'include'
     });
     if (!res.ok) throw new Error(`Failed to load registrations: ${res.status}`);
@@ -301,8 +281,9 @@ export const apiService = {
   },
 
   // GET /api/tickets/registrations-all (admin)
-  getAllRegistrations: async (page = 1, limit = 10): Promise<{ registrations: RegistrationView[]; pagination: any }> => {
-    const url = `${API_BASE}/api/tickets/registrations-all?page=${page}&limit=${limit}`;
+  getAllRegistrations: async (page = 1, limit = 10, search = ''): Promise<{ registrations: RegistrationView[]; pagination: any }> => {
+    const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
+    const url = `${API_BASE}/api/tickets/registrations-all?page=${page}&limit=${limit}${searchParam}`;
     console.log('Making request to:', url);
     try {
       const res = await fetch(url, {

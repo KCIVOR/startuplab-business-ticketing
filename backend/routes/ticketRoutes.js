@@ -26,8 +26,8 @@ router.get('/registrations', authMiddleware, getRegistrationsByEvent);
 // Admin: get all registrations across all events
 router.get('/registrations-all', authMiddleware, getAllRegistrations);
 
-// GET /api/tickets/:id
-router.get('/:id', authMiddleware, getTicketById);
+// GET /api/tickets/:id (public)
+router.get('/:id', getTicketById);
 
 // POST /api/tickets
 router.post('/', authMiddleware, createTicket);

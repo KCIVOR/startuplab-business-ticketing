@@ -17,10 +17,17 @@ function slugify(text = '') {
 
 export const listAdminEvents = async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const search = (req.query?.search || '').toString().trim();
+    let query = supabase
       .from('events')
       .select('*')
       .order('created_at', { ascending: false });
+
+    if (search) {
+      query = query.or(`eventName.ilike.%${search}%,locationText.ilike.%${search}%,description.ilike.%${search}%`);
+    }
+
+    const { data, error } = await query;
     if (error) return res.status(500).json({ error: error.message });
     return res.json(data || []);
   } catch (err) {
