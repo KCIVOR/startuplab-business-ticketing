@@ -1,0 +1,602 @@
+EVENT TICKETING & REGISTRATION
+SYSTEM
+EVENT TICKETING & REGISTRATION
+SYSTEM
+With HitPay Payment Integration
+Final Developer Brief
+1. Purpose of the System
+The purpose of this system is to manage event creation, ticketing, registration,
+payment processing, and attendance tracking through a centralized platform.
+The system must support both free and paid events, handle online payments via
+HitPay, and provide real-time visibility into registrations, revenue, and attendance.
+This system must be designed to integrate cleanly with the Performance Statistics
+System for reporting and analytics.
+2. Core Requirements
+• Event creation and management
+• Ticket configuration (free and paid)
+• Secure online payments via HitPay
+• Automated registration and confirmation
+• Attendee tracking and reporting
+• Revenue and performance visibility
+3. User Roles
+3.1 Event Admin
+• Create and manage events
+• Configure tickets and pricing
+• View registrations and payments
+• Access revenue reports
+3.2 Staff / Event Manager
+• View event details
+• View registration list
+• Manage check-in / attendance
+3.3 Attendee (External User)
+• View event details
+• Register for event
+• Purchase ticket via HitPay
+• Receive confirmation and ticket
+4. Event Management
+Each event must include:
+• Event name
+• Description
+• Date and time
+• Location (physical or online)
+• Capacity limit
+• Registration open/close dates
+• Event status (draft, published, closed)
+5. Ticketing System
+Each event may have multiple ticket types.
+Ticket attributes:
+• Ticket name
+• Price
+• Currency
+• Quantity available
+• Sales start/end date
+• Ticket type (free / paid)
+Rules:
+• Free tickets bypass payment flow
+• Paid tickets require successful HitPay payment
+• Ticket inventory must decrement in real time
+6. Registration Flow
+6.1 Free Event Flow
+1. Attendee selects event
+2. Completes registration form
+3. Receives confirmation email and ticket
+6.2 Paid Event Flow
+1. Attendee selects ticket
+2. Completes registration form
+3. Redirected to HitPay checkout
+4. Payment processed by HitPay
+5. Payment confirmation webhook received
+6. Ticket issued and confirmation email sent
+No ticket is considered valid until payment confirmation is received from HitPay.
+7. HitPay Payment Integration
+HitPay will be the exclusive payment gateway for ticket transactions.
+Integration requirements:
+• Use HitPay Checkout API
+• Support PHP, Node, or REST-based backend
+• Secure API key storage
+• Webhook handling for payment confirmation
+• Payment status tracking (pending, paid, failed, refunded)
+Required webhook events:
+• Payment success
+• Payment failure
+• Refund (if implemented later)
+All payment records must be stored locally for audit and reconciliation.
+8. Data Model (High-Level)
+Core entities:
+• Event
+• TicketType
+• Registration
+• Attendee
+• PaymentTransaction
+Each payment transaction must include:
+• HitPay transaction ID
+• Amount
+• Currency
+• Payment status
+• Timestamp
+9. Attendance & Check-In
+The system must support:
+• Digital ticket generation (QR or unique code)
+• Manual or QR-based check-in
+• Attendance status (checked-in / not checked-in)
+• Timestamped attendance logs
+10. Dashboards & Reporting
+Event Dashboard
+• Total registrations
+• Tickets sold
+• Revenue collected
+• Attendance rate
+Financial Dashboard
+• Revenue per event
+• Payment success vs failure
+• Refund tracking (future phase)
+11. Integration With Performance Statistics System
+This system must expose data for integration:
+Possible performance statistics:
+• Number of tickets sold
+• Event revenue generated
+• Event attendance count
+These statistics may be:
+• Assigned to roles (e.g. Event Manager)
+• Aggregated at team or company level
+Integration should be via:
+• Shared database tables OR
+• Internal API endpoints
+12. Notifications & Emails
+Automated emails:
+• Registration confirmation
+• Payment receipt
+• Ticket delivery
+• Event reminders
+Optional future phase:
+• SMS notifications
+13. Audit & Security
+• All payments must be logged
+• Webhook requests must be validated
+• No manual alteration of payment status
+• GDPR-compliant data handling
+14. Non-Functional Requirements
+• Web-based system
+• Mobile responsive registration
+• Secure payment handling
+• Scalable for high-volume events
+• Fast checkout experience
+15. Phased Development
+Phase 1
+• Event creation
+• Ticketing
+• HitPay integration
+• Registration flow
+Phase 2
+• Attendance tracking
+• Dashboards and reporting
+• Performance system integration
+Phase 3
+• Refunds
+• Discount codes
+• Advanced analytics
+16. Developer Deliverables
+• Event and ticketing database schema
+• HitPay integration documentation
+• Webhook handling logic
+• Registration and checkout flow
+• Admin dashboards
+• Deployment documentation
+Strategic Note
+This system gives you:
+• Revenue attribution per event
+• Clean integration into company performance stats
+• A foundation for paid workshops, trainings, and certifications
+FRONTEND SPEC
+FRONTEND SPEC
+Event Ticketing & Registration (HitPay Payments)
+1. Frontend Goals
+● Fast, mobile-first ticket purchase + registration flow
+● Clear separation of Admin vs Public Attendee UI
+● Reliable state handling for payment pending / success / failed
+● Minimal friction: fewer steps, fewer fields, clear confirmation
+2. User Roles (Frontend Views)
+Public (Attendee)
+● Browse events
+● View event details
+● Select ticket type and quantity
+● Register + pay via HitPay (for paid tickets)
+● Receive confirmation screen + ticket details
+Internal (Event Admin/Staff)
+● Admin portal (login required)
+● Event creation/editing
+● Ticket type management
+● Registrations list + check-in
+● Revenue + basic reporting dashboard
+3. Information Architecture (Screens)
+A) Public Website (Attendee-Facing)
+A1. Events Listing Page
+Route: /events
+Purpose: discover and select events
+UI blocks
+● Header: Events + filters
+● Event cards grid/list:
+○ Event name
+○ Date/time
+○ Location
+○ “Free” or “From ₱X”
+○ CTA: View Details
+Filters
+● Date (upcoming, this week, this month)
+● Location (online/on-site)
+● Price (free/paid)
+Empty states
+● No events available
+● Filter returns none
+A2. Event Details Page
+Route: /events/:slug
+Purpose: convert to registration
+UI blocks
+● Hero: title + date/time + location + capacity remaining
+● About: description, agenda, speakers (optional)
+● Ticket selection module (critical)
+● CTA: “Register” / “Buy Ticket”
+Ticket selection module
+● Ticket type dropdown/cards
+● Quantity selector
+● Price breakdown
+● Availability warning (low stock)
+Edge cases
+● Event closed → “Registration closed”
+● Sold out → “Sold out” + waitlist (optional future)
+A3. Registration Form Page (Step 1)
+Route: /events/:slug/register
+Purpose: capture attendee info
+Fields (recommended minimum)
+● Full name
+● Email
+● Mobile number (optional)
+● Company/Organization (optional)
+● Notes (optional)
+● Consent checkbox (terms/privacy)
+Ticket summary sidebar
+● Ticket type
+● Quantity
+● Total price
+● “Edit ticket” link → back to Event Details
+CTA
+● If free: Confirm Registration
+● If paid: Proceed to Payment
+Validation
+● Inline error messages
+● Email format
+● Required fields enforced
+A4. Payment Redirect / Checkout Initiation (Step 2)
+Route: /checkout/:sessionId (optional)
+Purpose: show “Redirecting to secure payment…”
+UI
+● Spinner + message
+● Order summary
+● “If not redirected, click here” button
+Action
+● Frontend calls backend: POST /api/payments/hitpay/checkout-session
+● Receives hitpay_checkout_url
+● Redirect browser to HitPay checkout page
+A5. Payment Status Return Page (Step 3)
+Route: /payment/status?sessionId=...
+Purpose: show user outcome while backend confirms via webhook
+States
+● Pending confirmation (default on return)
+● Paid / Success
+● Failed / Cancelled
+● Expired
+UI elements
+● Status icon + headline
+● Next steps message
+● Primary CTA:
+○ Success → “View Ticket”
+○ Failed → “Try Again” (recreate checkout)
+○ Pending → “Refresh status” + auto-poll every 3–5 sec (max 30–60 sec)
+Important behavior
+● Do NOT mark as paid based only on return params.
+● Always confirm via backend status endpoint.
+A6. Ticket / Confirmation Page
+Route: /tickets/:ticketId
+Purpose: show digital ticket for check-in
+UI
+● Ticket QR code / unique code
+● Attendee name
+● Event details
+● Ticket type + quantity
+● Status: valid / used / cancelled
+● “Add to calendar” button (optional)
+● “Send ticket to email again” (optional)
+B) Admin Portal (Internal)
+B1. Login
+Route: /admin/login
+B2. Admin Dashboard
+Route: /admin
+Cards
+● Upcoming events count
+● Tickets sold today/this week
+● Revenue today/this week
+● Alerts: events low inventory, high failed payments
+B3. Events Management
+Route: /admin/events
+● Table list: event name, date, status, registrations, revenue
+● Buttons: Create, Edit, Publish/Unpublish, Close
+B4. Event Editor (Create/Edit)
+Route: /admin/events/new and /admin/events/:id/edit
+Tabs:
+● Details (name, slug, description, time, location, capacity)
+● Tickets (ticket types CRUD)
+● Settings (reg open/close, confirmation email template optional)
+B5. Registrations List
+Route: /admin/events/:id/registrations
+● Search by name/email
+● Filters: paid/unpaid, checked-in/not, ticket type
+● Row actions: View ticket, Resend email, Manual check-in
+B6. Check-In Screen (Mobile-First)
+Route: /admin/events/:id/checkin
+Modes:
+● QR scan (preferred)
+● Manual code entry
+Outputs:
+● Valid → mark checked-in + timestamp
+● Invalid/used → show error state + attendee info if matched
+4. Reusable Components (Frontend Library)
+● EventCard
+● TicketTypeSelector
+● QuantityStepper
+● OrderSummary
+● FormInput + validation messages
+● StatusPanel (pending/success/fail)
+● QRCodeTicket
+● AdminTable (events/registrations)
+● Toast/Notifications
+● LoadingSkeleton
+5. Frontend State & UX Rules
+● Persist selected ticket type + qty in local state (and optionally URL params)
+● Show pricing clearly (subtotal, fees if any, total)
+● Disable CTA during submission to avoid duplicates
+● Handle network issues:
+○ “Retry” actions
+○ Safe error messaging
+6. API Touchpoints (What Frontend Needs)
+Even if backend is separate, frontend expects these endpoints:
+Public
+● GET /api/events (list)
+● GET /api/events/:slug (details + ticket types)
+● POST /api/registrations (create registration; returns sessionId/orderId)
+● POST /api/payments/hitpay/checkout-session (returns hitpay checkout URL)
+● GET /api/payments/status?sessionId=... (paid/pending/failed)
+● GET /api/tickets/:ticketId (ticket view)
+Admin
+● POST /api/auth/login
+● GET /api/admin/events
+● POST /api/admin/events
+● PUT /api/admin/events/:id
+● POST /api/admin/events/:id/publish
+● GET /api/admin/events/:id/registrations
+● POST /api/admin/checkin (ticketId/code)
+7. Payment UX (HitPay)
+Frontend responsibility
+● Start checkout by requesting checkout URL
+● Redirect user to HitPay
+● On return, show pending and poll backend status until confirmed
+● Never “assume success” from the redirect itself
+Best practice
+● Provide a “Try again” flow that reuses the registration but creates a new
+checkout session.
+8. Design Constraints (Suggested Defaults)
+● Mobile-first (most buyers will be on mobile)
+● 3-step flow maximum: Select ticket → Register → Pay
+● Keep admin UI functional and dense; public UI clean and conversion-focused
+9. Deliverables (Frontend)
+Ask your developer for:
+1. Public pages: /events, /events/:slug, /register, /payment/status, /tickets/:ticketId
+2. Admin pages: /admin/* (dashboard, events CRUD, registrations, check-in)
+3. Component library + form validation pattern
+4. Payment flow: redirect + return + status polling
+5. Error/empty/loading states for all pages
+BACKEND SPEC
+BACKEND SPEC
+Event Ticketing & Registration System (HitPay
+Payments)
+1. Backend Goals
+● Reliable ticket inventory + registration handling (no overselling)
+● Secure, verifiable payment confirmation via HitPay webhooks
+● Clean data model for auditability (payments, refunds later)
+● Admin + public API separation with role-based access control
+● Extensible for discounts, refunds, integrations later
+2. Core Entities (Database Model)
+2.1 users
+Internal accounts only (admin/staff).
+● id (uuid/int)
+● name
+● email (unique)
+● password_hash
+● role: ADMIN | STAFF | MANAGER | EXEC (or your internal set)
+● created_at, updated_at
+2.2 events
+● id
+● slug (unique)
+● name
+● description (text)
+● start_at (datetime)
+● end_at (datetime)
+● timezone
+● location_type: ONSITE | ONLINE | HYBRID
+● location_text (address/meeting link placeholder)
+● capacity_total (int, nullable)
+● status: DRAFT | PUBLISHED | CLOSED | CANCELLED
+● reg_open_at, reg_close_at
+● created_by (user_id)
+● created_at, updated_at
+2.3 ticket_types
+● id
+● event_id (fk)
+● name
+● description (nullable)
+● price_amount (decimal) — 0 for free
+● currency (e.g. PHP)
+● quantity_total (int)
+● quantity_sold (int default 0) (denormalized for speed; must be consistent)
+● sales_start_at, sales_end_at
+● status: ACTIVE | INACTIVE
+● created_at, updated_at
+2.4 orders
+Represents a purchase attempt (even free can use it, but optional).
+● id
+● event_id
+● status: DRAFT | PENDING_PAYMENT | PAID | FAILED | CANCELLED | EXPIRED
+● total_amount
+● currency
+● buyer_name
+● buyer_email
+● buyer_phone (nullable)
+● metadata (json)
+● expires_at (datetime) (for pending payments)
+● created_at, updated_at
+2.5 order_items
+● id
+● order_id
+● ticket_type_id
+● quantity
+● unit_price
+● line_total
+2.6 attendees
+One per person registration record.
+● id
+● order_id (nullable for free if you skip orders)
+● event_id
+● full_name
+● email
+● phone (nullable)
+● company (nullable)
+● notes (nullable)
+● consent (boolean)
+● created_at
+2.7 tickets
+One per ticket unit (or batch; recommend per unit for QR validity).
+● id
+● event_id
+● ticket_type_id
+● attendee_id
+● order_id
+● ticket_code (unique)
+● qr_payload (string or derived)
+● status: ISSUED | USED | CANCELLED | REFUNDED
+● issued_at
+● used_at (nullable)
+2.8 payment_transactions
+● id
+● order_id
+● gateway: HITPAY
+● hitpay_reference_id (unique) (or payment_id depending on HitPay response)
+● amount
+● currency
+● status: INITIATED | PENDING | SUCCEEDED | FAILED | REFUNDED
+● raw_payload (json) (store webhook payloads for audit)
+● created_at, updated_at
+2.9 webhook_events (recommended)
+Store all webhook calls for traceability + replay protection.
+● id
+● gateway
+● event_type
+● external_id (unique if available)
+● payload (json)
+● received_at
+● processed_at (nullable)
+● processing_status: RECEIVED | PROCESSED | FAILED
+3. Critical Business Rules
+3.1 Inventory Control (No Overselling)
+When an order is created:
+● Validate ticket availability (quantity_total - quantity_sold >= requested_qty)
+● Reserve inventory for paid orders while payment is pending, either by:
+Option A: Reservation table (recommended)
+○ ticket_reservations with expiry, reduces available count logically
+Option B: optimistic lock
+○ atomic update on ticket_types:
+■ UPDATE ticket_types SET quantity_sold = quantity_sold + X
+WHERE id=? AND quantity_sold + X <= quantity_total
+Reservation expiry:
+● If payment not confirmed before expires_at, release reservation and mark order
+expired.
+3.2 Payment Confirmation Authority
+The only authority to mark an order as PAID is:
+● verified HitPay webhook confirmation
+NOT the return URL redirect.
+3.3 Ticket Issuance
+Tickets are issued only when:
+● free order confirmed, or
+● payment status is SUCCEEDED via webhook
+4. HitPay Integration (Backend)
+4.1 Checkout Session Creation
+Backend endpoint creates HitPay payment request / checkout URL.
+Store:
+● order_id
+● amount/currency
+● payer info
+● callback URLs:
+○ return URL → frontend /payment/status?sessionId=...
+○ webhook URL → backend /webhooks/hitpay
+4.2 Webhook Handler (Required)
+Endpoint: POST /webhooks/hitpay
+Handler responsibilities:
+1. Validate signature / authenticity (per HitPay docs)
+2. Store payload in webhook_events and payment_transactions.raw_payload
+3. Idempotency: ensure same payment event isn’t processed twice
+4. Update payment_transactions.status
+5. If success:
+○ set order PAID
+○ finalize ticket inventory (if reserved)
+○ create attendee record(s) if needed
+○ generate tickets (ticket_code + QR)
+○ trigger email sending (async job recommended)
+6. If failed:
+○ mark order FAILED
+○ release reservation
+4.3 Status Polling Endpoint
+Frontend polls:
+GET /api/payments/status?sessionId=...
+Return: PENDING | PAID | FAILED | EXPIRED
+5. API Endpoints (Backend Contract)
+Public
+● GET /api/events
+● GET /api/events/:slug
+● POST /api/registrations
+○ creates attendee + order draft + order_items + inventory reservation
+● POST /api/payments/hitpay/checkout-session
+○ returns checkout URL
+● GET /api/payments/status?sessionId=...
+● GET /api/tickets/:ticketId (or by ticket_code for public access)
+Admin (Auth required)
+● POST /api/auth/login
+● GET /api/admin/events
+● POST /api/admin/events
+● PUT /api/admin/events/:id
+● POST /api/admin/events/:id/publish
+● POST /api/admin/events/:id/close
+● GET /api/admin/events/:id/registrations
+● POST /api/admin/checkin
+○ accepts ticket_code or ticket_id
+6. Security Requirements
+● Store HitPay keys in environment secrets (never in code)
+● Validate and verify webhook authenticity
+● Rate limit webhook + payment endpoints
+● Prevent ticket enumeration:
+○ ticket IDs should be UUIDs OR require tokenized access
+● Admin endpoints require JWT/session auth
+● Input validation on all endpoints
+7. Background Jobs (Strongly Recommended)
+Use a queue worker for:
+● sending confirmation emails + tickets
+● generating PDF tickets (optional)
+● webhook processing retries
+● reservation expiration cleanup (cron)
+8. Logging & Observability
+Must log:
+● order creation
+● checkout session creation
+● webhook received + processed
+● ticket issuance
+● check-in actions
+Dashboards:
+● payment success/fail rate
+● webhook processing failures
+● pending orders aging
+9. Refunds (Future Phase Hooks)
+Design now so refunds are easy later:
+● payment status REFUNDED
+● ticket status REFUNDED or CANCELLED
+● admin UI can request refund; backend hits HitPay refund endpoint (future)
+10. Deliverables for Developer
+1. DB schema + migrations
+2. API implementation per contract
+3. HitPay integration (checkout + webhook + status polling)
+4. Inventory reservation mechanism + expiry
+5. Ticket generation (code + QR payload)
+6. Email sending pipeline (async)
+7. Admin auth + RBAC
+8. Deployment notes (env vars, webhook URL setup, cron/queue)
+One Decision You Must Make (Developer Can
+Implement Either)
+Inventory reservation strategy
+● Best: Reservation table with expiry (most reliable under concurrency)
+● Acceptable: Atomic update + order expiry rollback (simpler, more risk)

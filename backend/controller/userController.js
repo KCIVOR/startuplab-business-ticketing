@@ -1,0 +1,177 @@
+import db from  "../database/db.js";
+
+export const getUser = async (req, res) => {
+    try{
+        console.log("hi")
+    } catch(error){
+        console.log(error)
+    }
+}
+
+export const getRole = async (req, res) => {
+    try {
+        // TEMP: fetch the first user's role
+        const { data, error } = await db.from("users").select("role").limit(1);
+        if (error) return res.status(500).json({ error: error.message });
+        return res.json(data);
+    } catch(error){
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export const whoAmI = async (req, res) => {
+    try{
+        const userId = req.user?.id;
+        if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+        
+        // Attempt by userId column first
+        let data = null;
+        let error = null;
+        let resp = await db
+            .from('users')
+            .select("userId, name, email, role, imageUrl, canviewevents, caneditevents, canmanualcheckin")
+            .eq("userId", userId)
+            .maybeSingle();
+        data = resp.data; error = resp.error;
+
+        // Fallback: some schemas use id instead of userId
+        if ((!data && !error) || (error && error.message?.includes('column "userId"') )) {
+          resp = await db
+            .from('users')
+            .select("id, name, email, role, imageUrl, canviewevents, caneditevents, canmanualcheckin")
+            .eq("id", userId)
+            .maybeSingle();
+          data = resp.data; error = resp.error;
+        }
+
+        // If permission columns missing, fallback to select minimal with userId
+        if (error && error.message?.includes('column')) {
+          resp = await db
+            .from('users')
+            .select("*")
+            .eq('userId', userId)
+            .maybeSingle();
+          data = resp.data; error = resp.error;
+        }
+        // Fallback with id for minimal select
+        if ((!data && !error) || (error && error.message?.includes('column'))) {
+          resp = await db
+            .from('users')
+            .select("*")
+            .eq('id', userId)
+            .maybeSingle();
+          data = resp.data; error = resp.error;
+        }
+
+        if (error) return res.status(500).json({ error: error.message });
+        if (!data) return res.status(404).json({ error: 'User not found' });
+
+        const role = data.role;
+        const defaultStaff = role === 'STAFF';
+        // Normalize response with permissive defaults for staff unless explicitly false
+        return res.json({
+          userId: data.userId || data.id,
+          name: data.name,
+          email: data.email,
+          role,
+          imageUrl: data.imageUrl,
+          canViewEvents: data.canviewevents === undefined || data.canviewevents === null ? defaultStaff : !!data.canviewevents,
+          canEditEvents: data.caneditevents === undefined || data.caneditevents === null ? defaultStaff : !!data.caneditevents,
+          canManualCheckIn: data.canmanualcheckin === undefined || data.canmanualcheckin === null ? defaultStaff : !!data.canmanualcheckin,
+        });
+
+    }catch(error){
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export const getAllUsers = async (req, res) => {
+    try {
+        let { data, error } = await db.from("users").select("userId, name, email, role, imageUrl, canviewevents, caneditevents, canmanualcheckin");
+
+        if (error && error.message?.includes('column')) {
+          const fallback = await db.from("users").select("*");
+          data = fallback.data; error = fallback.error;
+        }
+        if (error) return res.status(500).json({ error: error.message });
+        return res.json(data.map(user => ({
+          ...user,
+          canViewEvents: user.canviewevents,
+          canEditEvents: user.caneditevents,
+          canManualCheckIn: user.canmanualcheckin,
+        })));
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const updatePermissions = async (req, res) => {
+  try {
+    let requesterRole = req.user?.role;
+    if (requesterRole !== 'ADMIN') {
+      // Fallback: look up role in DB using userId/id/email
+      const requesterId = req.user?.id;
+      const requesterEmail = req.user?.email;
+      let roleRow = null;
+      if (requesterId) {
+        const byUserId = await db.from('users').select('role').eq('userId', requesterId).maybeSingle();
+        roleRow = byUserId.data;
+        if (!roleRow || byUserId.error) {
+          const byId = await db.from('users').select('role').eq('id', requesterId).maybeSingle();
+          roleRow = byId.data;
+        }
+      }
+      if (!roleRow && requesterEmail) {
+        const byEmail = await db.from('users').select('role').eq('email', requesterEmail).maybeSingle();
+        roleRow = byEmail.data;
+      }
+      requesterRole = roleRow?.role;
+    }
+
+    if (requesterRole !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
+
+    const { id } = req.params;
+    const { canViewEvents = false, canEditEvents = false, canManualCheckIn = false } = req.body || {};
+
+    let { data, error } = await db
+      .from('users')
+      .update({ canviewevents: canViewEvents, caneditevents: canEditEvents, canmanualcheckin: canManualCheckIn })
+      .eq('userId', id)
+      .select('userId, name, email, role, canviewevents, caneditevents, canmanualcheckin')
+      .maybeSingle();
+
+    if ((!data && !error) || (error && error.message?.includes('column "userId"'))) {
+      const resp = await db
+        .from('users')
+        .update({ canviewevents: canViewEvents, caneditevents: canEditEvents, canmanualcheckin: canManualCheckIn })
+        .eq('id', id)
+        .select('id, name, email, role, canviewevents, caneditevents, canmanualcheckin')
+        .maybeSingle();
+      data = resp.data; error = resp.error;
+    }
+
+    if (error) return res.status(500).json({ error: error.message });
+    if (!data) return res.status(404).json({ error: 'User not found' });
+    return res.json({
+      ...data,
+      canViewEvents: data.canviewevents,
+      canEditEvents: data.caneditevents,
+      canManualCheckIn: data.canmanualcheckin,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const getRoleByEmail = async (req, res) => {
+    try {
+        const email = req.query.email;
+        if (!email) return res.status(400).json({ error: "Email is required" });
+        const { data, error } = await db.from("users").select("role").eq("email", email).maybeSingle();
+        if (error) return res.status(500).json({ error: error.message });
+        if (!data) return res.status(404).json({ error: "User not found" });
+        return res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

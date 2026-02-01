@@ -1,0 +1,7 @@
+{
+  "name": "StartupLab Business Ticketing",
+  "description": "Enterprise-grade event ticketing and registration system with HitPay integration, attendance tracking, and real-time revenue analytics.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
